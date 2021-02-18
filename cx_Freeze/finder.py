@@ -625,11 +625,20 @@ class ModuleFinder:
     def ExcludeDependentFiles(self, filename: str) -> None:
         self.exclude_dependent_files[filename] = None
 
-    def ExcludeModule(self, name: str) -> None:
+    def ExcludeModule1(self, name: str) -> None:
         """Exclude the named module from the resulting frozen executable."""
         self.excludes[name] = None
         self._modules[name] = None
-
+    def ExcludeModule(self, name: str) -> None:
+        """Exclude the named module from the resulting frozen executable."""
+        import re
+        re_name = name.replace(".", "\.")
+        regex = re.compile(fr"^{re_name}(\..*)?$")
+        matches = [regex.fullmatch(t) for t in self._modules]
+        modules_to_exclude = [match.string for match in matches if match is not None]
+        for m in modules_to_exclude:
+            self.excludes[m] = None
+            self._modules[m] = None
     def IncludeFile(self, path: str, name: Optional[str] = None) -> Module:
         """Include the named file as a module in the frozen executable."""
         if name is None:
